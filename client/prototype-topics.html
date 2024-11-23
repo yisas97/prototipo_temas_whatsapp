@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Temas del Grupo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: rgb(200, 220, 224);
+            font-family: Helvetica, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #03773f;
+            color: white;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .topic-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .topic-item {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: #f8f9fa;
+        }
+
+        .topic-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .topic-name {
+            font-size: 1.2em;
+            color: #03773f;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .topic-summary {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="goBack()">&larr;</button>
+            <h2 id="group-title">Cargando...</h2>
+        </div>
+
+        <div id="topics-container" class="topic-list">
+            <div class="loading">Cargando temas...</div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('groupId').replace('grupo', '');
+
+        const groupNames = {
+            '1': 'Equipo de planeamiento',
+            '2': 'Piscinon en casa de JP',
+            '3': 'Mira mi Python'
+        };
+
+        async function loadTopics() {
+            try {
+                document.getElementById('group-title').textContent = groupNames[groupId];
+                console.log("ID GRUPO: ",groupId);
+                const response = await fetch(`/api/topics/${groupId}`);
+                const data = await response.json();
+                console.log("DATA: ",data);
+                if (data.success) {
+                    const container = document.getElementById('topics-container');
+                    console.log("DATA TOPIC",data.topics)
+                    container.innerHTML = data.topics.map(topic => `
+                        <div class="topic-item" onclick="showChat('${topic.nombre}')">
+                            <div class="topic-name">${topic.nombre}</div>
+                            <div class="topic-summary">
+                                <strong>Resumen:</strong> ${topic.resumen}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('topics-container').innerHTML = 
+                    '<div class="loading">Error al cargar los temas</div>';
+            }
+        }
+
+        function showChat(topic) {
+            window.location.href = `/chat?groupId=${groupId}&topic=${encodeURIComponent(topic)}`;
+        }
+
+        function goBack() {
+            window.location.href = '/prototype-groups';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTopics);
+    </script>
+</body>
+</html>

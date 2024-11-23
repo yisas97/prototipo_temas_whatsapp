@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>wa api test demo</title>
+    <meta name="description" content="WhatsApp Api otomatis.">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <style>
+        body {
+            background: rgb(200, 220, 224);
+        }
+        
+        .form {
+            font-family: Helvetica, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 16px;
+            background: #ffffff;
+        }
+        
+        .form h1 {
+            background: #03773f;
+            padding: 20px 0;
+            font-weight: 300;
+            text-align: center;
+            color: #fff;
+            margin: -16px -16px 16px -16px;
+            font-size: 25px;
+        }
+        
+        .qrcode {
+            padding: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .qrcode img {
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(67, 67, 68, 0.25);
+            padding: 4px;
+            width: 250px;
+        }
+
+        /* Estilos para el botón prototipo */
+        #prototype-btn {
+            display: none; /* Inicialmente oculto */
+            background: #03773f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px auto;
+            width: auto;
+        }
+
+        #prototype-btn:hover {
+            background: #025e32;
+        }
+
+        /* Estilo para el mensaje de estado */
+        #status-message {
+            margin-top: 10px;
+            color: #03773f;
+        }
+    </style>
+</head>
+<body>
+    <div class="form">
+        <h1>API UNI - CODIFICADOR</h1>
+        <div id="qrcode-container">
+            <img src="./assets/loader.gif" alt="loading" id="qrcode" style="width: 250px;">
+        </div>
+        <div class="card">
+            <div class="body">
+                <p>
+                    <li>Escanea el siguiente código QR con tu aplicación de WhatsApp</li>
+                    <h5 id="iduser"></h5>
+                </p>
+                <p id="status-message"></p>
+            </div>
+        </div>
+        <button id="prototype-btn" onclick="window.location.href='/prototype-groups'">PROTOTIPO</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js" crossorigin="anonymous"></script>
+    <script>
+        const qrcode = document.getElementById("qrcode");
+        const iduser = document.getElementById("iduser");
+        const prototypeBtn = document.getElementById("prototype-btn");
+        const statusMessage = document.getElementById("status-message");
+        const socket = io();
+
+        socket.on("qr", url => {
+            console.log("QR recibido");
+            qrcode.setAttribute("src", url);
+            statusMessage.textContent = "Esperando escaneo del código QR...";
+            prototypeBtn.style.display = "none";
+        });
+
+        socket.on("qrstatus", src => {
+            console.log("Estado QR actualizado:", src);
+            qrcode.setAttribute("src", src);
+            
+            if (src.includes("check.svg")) {
+                statusMessage.textContent = "¡Conexión exitosa!";
+                prototypeBtn.style.display = "block";
+                console.log("Mostrando botón prototipo");
+            }
+        });
+
+        socket.on("user", user => {
+            console.log("Usuario recibido:", user);
+            iduser.innerHTML = user;
+            // Asegurar que el botón esté visible cuando se recibe el usuario
+            prototypeBtn.style.display = "block";
+        });
+
+        // Verificar conexión inicial
+        socket.on("connect", () => {
+            console.log("Socket conectado");
+        });
+
+        // Manejar desconexiones
+        socket.on("disconnect", () => {
+            console.log("Socket desconectado");
+            prototypeBtn.style.display = "none";
+            statusMessage.textContent = "Desconectado. Reconectando...";
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: rgb(200, 220, 224);
+            font-family: Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            background: #03773f;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #e5ddd5;
+        }
+
+        .message {
+            max-width: 65%;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 10px;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.received {
+            background: white;
+            margin-right: auto;
+            border-top-left-radius: 0;
+        }
+
+        .message.sent {
+            background: #dcf8c6;
+            margin-left: auto;
+            border-top-right-radius: 0;
+        }
+
+        .message-sender {
+            color: #03773f;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .message-content {
+            color: #303030;
+        }
+
+        /* Estilos para el input de mensaje */
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background: #f0f0f0;
+            align-items: center;
+            border-top: 1px solid #ddd;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .message-input:focus {
+            outline: none;
+        }
+
+        .send-button {
+            background: #03773f;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .send-button:hover {
+            background: #025e32;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="back-button" onclick="goBack()">&larr;</button>
+            <div>
+                <h2 id="group-title">Cargando...</h2>
+                <div id="topic-title">Cargando...</div>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messages">
+            <div class="loading">Cargando mensajes...</div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" 
+                   class="message-input" 
+                   placeholder="Escribe un mensaje..." 
+                   id="messageInput"
+                   onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()">→</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('groupId');
+        const topic = urlParams.get('topic');
+
+        const groupNames = {
+            '1': 'Equipo de planeamiento',
+            '2': 'Piscinon en casa de JP',
+            '3': 'Mira mi Python'
+        };
+
+        let messagesData = [];
+
+        async function loadMessages() {
+            try {
+                document.getElementById('group-title').textContent = groupNames[groupId];
+                document.getElementById('topic-title').textContent = decodeURIComponent(topic);
+
+                const response = await fetch(`/api/messages/${groupId}/${topic}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    messagesData = data.messages;
+                    renderMessages();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('messages').innerHTML = 
+                    '<div class="loading">Error al cargar los mensajes</div>';
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messages');
+            container.innerHTML = messagesData.map(msg => createMessageHTML(msg)).join('');
+            scrollToBottom();
+        }
+
+        function createMessageHTML(msg) {
+            const isCurrentUser = msg.participante === 'Tú'; // Para mensajes enviados
+            const messageClass = isCurrentUser ? 'sent' : 'received';
+            
+            return `
+                <div class="message ${messageClass}">
+                    <div class="message-sender">${msg.participante}</div>
+                    <div class="message-content">${msg.mensaje}</div>
+                </div>`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Crear nuevo mensaje
+                const newMessage = {
+                    participante: 'Tú',
+                    mensaje: message
+                };
+
+                // Añadir a los mensajes existentes
+                messagesData.push(newMessage);
+                
+                // Limpiar input y actualizar vista
+                input.value = '';
+                renderMessages();
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function goBack() {
+            window.location.href = `/prototype-topics?groupId=grupo${groupId}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMessages);
+    </script>
+</body>
+</html>

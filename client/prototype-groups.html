@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Grupos de WhatsApp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: rgb(200, 220, 224);
+            font-family: Helvetica, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #03773f;
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+
+        .groups-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .group-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .group-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-image {
+            width: 50px;
+            height: 50px;
+            background: #03773f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .group-name {
+            font-size: 1.1em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Grupos de WhatsApp</h1>
+        </div>
+
+        <div class="groups-list">
+            <div class="group-item" onclick="showTopics('grupo1')">
+                <div class="group-image">EP</div>
+                <div class="group-name">Equipo de planeamiento</div>
+            </div>
+            <div class="group-item" onclick="showTopics('grupo2')">
+                <div class="group-image">PJ</div>
+                <div class="group-name">Piscinon en casa de JP</div>
+            </div>
+            <div class="group-item" onclick="showTopics('grupo3')">
+                <div class="group-image">MP</div>
+                <div class="group-name">Mira mi Python</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTopics(groupId) {
+            window.location.href = `/prototype-topics?groupId=${groupId}`;
+        }
+    </script>
+</body>
+</html>
