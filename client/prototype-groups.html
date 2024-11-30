@@ -1,101 +1,475 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="es">
+  <head>
     <title>Grupos de WhatsApp</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        body {
-            background: rgb(200, 220, 224);
-            font-family: Helvetica, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
+      body {
+        background: rgb(200, 220, 224);
+        font-family: Helvetica, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
 
-        .dashboard {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+      .dashboard {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .header {
-            background: #03773f;
-            color: white;
-            padding: 20px;
-            margin: -20px -20px 20px -20px;
-            border-radius: 8px 8px 0 0;
-            text-align: center;
-        }
+      .header {
+        background: #03773f;
+        color: white;
+        padding: 20px;
+        margin: -20px -20px 20px -20px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .groups-list {
-            list-style: none;
-            padding: 0;
-        }
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-        .group-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+      }
 
-        .group-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+      .action-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
 
-        .group-image {
-            width: 50px;
-            height: 50px;
-            background: #03773f;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 15px;
-        }
+      .tematiza-btn {
+        background: white;
+        color: #03773f;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
 
-        .group-name {
-            font-size: 1.1em;
-            color: #333;
+      .tematiza-btn:hover {
+        background: #f0f0f0;
+      }
+
+      .tematiza-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .groups-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .group-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .group-image {
+        width: 50px;
+        height: 50px;
+        background: #03773f;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 15px;
+      }
+
+      .group-name {
+        font-size: 1.1em;
+        color: #333;
+        flex-grow: 1;
+      }
+
+      .checkbox-custom {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #03773f;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+        background: white;
+      }
+
+      .checkbox-custom.checked {
+        background: #03773f;
+        position: relative;
+      }
+
+      .checkbox-custom.checked::after {
+        content: "✓";
+        color: white;
+        font-size: 16px;
+      }
+
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .loading-message {
+        background: white;
+        padding: 20px 40px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .selection-view {
+        display: block;
+      }
+
+      .thematized-view {
+        display: none;
+      }
+
+      .header-title {
+        margin: 0;
+        font-size: 1.5em;
+      }
+
+      .back-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        margin-right: 15px;
+        padding: 0;
+      }
+
+      .processed-header {
+        display: flex;
+        align-items: center;
+      }
+
+      /* Estilos para el spinner */
+      .loading-spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgb(200, 220, 224);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #03773f;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .spinner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px; /* Espacio entre el spinner y el texto */
+      }
+
+      .spinner-text {
+        color: #000000;
+        font-weight: bold;
+        font-size: 1.1em;
+        text-align: center;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .spinner-text img {
+        filter: brightness(0) saturate(100%) hue-rotate(125deg);
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Ocultar contenido mientras carga */
+      .content-container {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div
+      id="tematizacionSpinner"
+      class="loading-spinner-overlay"
+      style="display: none"
+    >
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <div class="spinner-text">
+          <img
+            src="./assets/logo-sm.png"
+            alt="CLASIF.AI"
+            style="height: 24px; vertical-align: middle; margin-right: 8px"
+          />
+          argando grupos tematizados...
+        </div>
+      </div>
+    </div>
+
     <div class="dashboard">
+      <!-- Vista de selección inicial -->
+      <div id="selectionView" class="selection-view">
         <div class="header">
-            <h1>Grupos de WhatsApp</h1>
+          <div class="logo-section">
+            <img
+              src="./assets/logo-sm.png"
+              alt="CLASIF.AI"
+              style="height: 40px"
+            />
+            <div>HATS</div>
+          </div>
+          <div class="action-section">
+            <span>Elige los chats para TEMATIZAR</span>
+            <button
+              id="tematizaBtn"
+              class="tematiza-btn"
+              disabled
+              onclick="procesarGrupos()"
+            >
+              Tematiza
+            </button>
+          </div>
         </div>
 
         <div class="groups-list">
-            <div class="group-item" onclick="showTopics('grupo1')">
-                <div class="group-image">EP</div>
-                <div class="group-name">Equipo de planeamiento</div>
-            </div>
-            <div class="group-item" onclick="showTopics('grupo2')">
-                <div class="group-image">PJ</div>
-                <div class="group-name">Piscinon en casa de JP</div>
-            </div>
-            <div class="group-item" onclick="showTopics('grupo3')">
-                <div class="group-image">MP</div>
-                <div class="group-name">Mira mi Python</div>
-            </div>
+          <div
+            class="group-item"
+            onclick="toggleGroup('grupo1', 'Equipo de planeamiento', 'EP')"
+          >
+            <div class="group-image">EP</div>
+            <div class="group-name">Equipo de planeamiento</div>
+            <div class="checkbox-custom" id="check-grupo1"></div>
+          </div>
+          <div
+            class="group-item"
+            onclick="toggleGroup('grupo2', 'Piscinon en casa de JP', 'PJ')"
+          >
+            <div class="group-image">PJ</div>
+            <div class="group-name">Piscinon en casa de JP</div>
+            <div class="checkbox-custom" id="check-grupo2"></div>
+          </div>
+          <div
+            class="group-item"
+            onclick="toggleGroup('grupo3', 'Mira mi Python', 'MP')"
+          >
+            <div class="group-image">MP</div>
+            <div class="group-name">Mira mi Python</div>
+            <div class="checkbox-custom" id="check-grupo3"></div>
+          </div>
         </div>
+      </div>
+
+      <!-- Vista de grupos tematizados -->
+      <div id="thematizedView" class="thematized-view">
+        <div class="header">
+          <div class="processed-header">
+            <button class="back-button" onclick="volverASeleccion()">←</button>
+            <div class="logo-section">
+              <img
+                src="./assets/logo-sm.png"
+                alt="CLASIF.AI"
+                style="height: 40px"
+              />
+              <div>HATS TEMATIZADOS</div>
+            </div>
+          </div>
+        </div>
+        <div id="thematizedGroups" class="groups-list">
+          <!-- Aquí se insertarán los grupos tematizados -->
+        </div>
+      </div>
     </div>
 
     <script>
-        function showTopics(groupId) {
-            window.location.href = `/prototype-topics?groupId=${groupId}`;
+      const selectedGroups = new Map();
+      const tematizaBtn = document.getElementById("tematizaBtn");
+      const loadingOverlay = document.getElementById("loadingOverlay");
+      const selectionView = document.getElementById("selectionView");
+      const thematizedView = document.getElementById("thematizedView");
+
+      // Verificar si hay grupos tematizados guardados al cargar la página
+      function checkThematizedGroups() {
+        const savedGroups = localStorage.getItem("thematizedGroups");
+        if (savedGroups) {
+          // Si hay grupos guardados, mostrar directamente la vista de tematizados
+          const groupsData = JSON.parse(savedGroups);
+          groupsData.forEach((group) => {
+            selectedGroups.set(group.id, {
+              name: group.name,
+              initial: group.initial,
+            });
+          });
+          mostrarGruposTematizados();
         }
+      }
+
+      function toggleGroup(groupId, groupName, initial) {
+        const checkElement = document.getElementById(`check-${groupId}`);
+
+        if (selectedGroups.has(groupId)) {
+          selectedGroups.delete(groupId);
+          checkElement.classList.remove("checked");
+        } else {
+          selectedGroups.set(groupId, { name: groupName, initial: initial });
+          checkElement.classList.add("checked");
+        }
+
+        tematizaBtn.disabled = selectedGroups.size === 0;
+      }
+
+      function procesarGrupos() {
+        if (selectedGroups.size === 0) {
+          alert("Por favor selecciona al menos un grupo");
+          return;
+        }
+
+        // Mostrar el spinner de tematización
+        document.getElementById("tematizacionSpinner").style.display = "flex";
+
+        // Guardar los grupos seleccionados en localStorage
+        const groupsToSave = Array.from(selectedGroups.entries()).map(
+          ([id, data]) => ({
+            id: id,
+            name: data.name,
+            initial: data.initial,
+          })
+        );
+        localStorage.setItem("thematizedGroups", JSON.stringify(groupsToSave));
+
+        setTimeout(() => {
+          // Ocultar el spinner
+          document.getElementById("tematizacionSpinner").style.display = "none";
+          mostrarGruposTematizados();
+        }, 2000);
+      }
+
+      function mostrarGruposTematizados() {
+        const thematizedGroupsContainer =
+          document.getElementById("thematizedGroups");
+        thematizedGroupsContainer.innerHTML = "";
+
+        selectedGroups.forEach((groupInfo, groupId) => {
+          const groupElement = document.createElement("div");
+          groupElement.className = "group-item";
+          groupElement.onclick = () =>
+            (window.location.href = `/prototype-topics?groupId=${groupId}`);
+
+          groupElement.innerHTML = `
+                    <div class="group-image">${groupInfo.initial}</div>
+                    <div class="group-name">${groupInfo.name}</div>
+                `;
+
+          thematizedGroupsContainer.appendChild(groupElement);
+        });
+
+        selectionView.style.display = "none";
+        thematizedView.style.display = "block";
+      }
+
+      function volverASeleccion() {
+        // Limpiar localStorage y grupos seleccionados
+        localStorage.removeItem("thematizedGroups");
+        selectedGroups.clear();
+
+        // Limpiar checkboxes
+        document.querySelectorAll(".checkbox-custom").forEach((checkbox) => {
+          checkbox.classList.remove("checked");
+        });
+
+        selectionView.style.display = "block";
+        thematizedView.style.display = "none";
+        tematizaBtn.disabled = true;
+      }
+
+      async function initializePage() {
+        showSpinner();
+
+        // Simular tiempo de carga (puedes ajustar o quitar este setTimeout)
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const savedGroups = localStorage.getItem("thematizedGroups");
+        if (savedGroups) {
+          const groupsData = JSON.parse(savedGroups);
+          groupsData.forEach((group) => {
+            selectedGroups.set(group.id, {
+              name: group.name,
+              initial: group.initial,
+            });
+          });
+          mostrarGruposTematizados();
+        }
+
+        hideSpinner();
+      }
+
+      // Verificar grupos tematizados al cargar la página
+      document.addEventListener("DOMContentLoaded", () => {
+        const savedGroups = localStorage.getItem("thematizedGroups");
+        if (savedGroups) {
+          const groupsData = JSON.parse(savedGroups);
+          groupsData.forEach((group) => {
+            selectedGroups.set(group.id, {
+              name: group.name,
+              initial: group.initial,
+            });
+          });
+          mostrarGruposTematizados();
+        }
+      });
     </script>
-</body>
+  </body>
 </html>
